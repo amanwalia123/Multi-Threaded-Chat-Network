@@ -23,7 +23,7 @@ java ConcServer <Port Number> <No. of threads for Clients>
 ```
 #### Compiling & running Peer Side
 
-``
+```
 cd Peer
 javac Client.java MainClient.java PeerClient.java PeerClientHandler.java
 PeerNode.java PeerServer.java
