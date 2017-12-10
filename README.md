@@ -8,11 +8,11 @@ You need to have java installed on your machine.
 ### Installing
 Download this project to your machine.
 Move to the folder using
-``
+```
 cd Multi-Threaded-Chat-Network
 ```
 #### Compiling & running Centralized Server Side
-``
+```
 cd Server
 javac ConcServer.java ClientHandler.java MyPair.java
 
