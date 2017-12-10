@@ -36,6 +36,7 @@ java MainClient <centralized Server IP Address> <Local ServerIP Address>
 ### Working
 
 Following messaging protocol is implemented:
+```
 JOIN : Join the centralized Server for Discovery. Followed by asking for a unique name
 LIST : List the available peers connected to centralized Server
 LEAVE : Disconnect from centralized server as well as all connected peers
@@ -43,7 +44,7 @@ P2P CONNECT nickname: Connect to peer on centralized server with corresponding n
 P2P SEND<HOST IP ADRESS>: message: Send message to the respective peer on host IP address, this will fail
 if peer connection is not established
 P2P DISCONNECT <HOST IP ADRESS>: Disconnect from the peer, this will fail if there is no connection to peer.
-
+```
 Refer to [Documentation](Report.pdf) for more information.
 ## Authors
 * **Amanpreet Walia** 
