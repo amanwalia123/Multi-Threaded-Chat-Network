@@ -1,0 +1,142 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class MainClient extends Client {
+
+    public int peerServerPort;
+
+    private boolean connected;
+
+    //Read Input from User
+    static BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+
+    /* P2P connection object deals
+      Deals with the peer related connections
+       */
+    PeerNode peerConnections = null;
+
+    //static Scanner input  = new Scanner(System.in);
+    public MainClient(String hostName, int portNum, int peerServerport) {
+        super(hostName, portNum);
+        this.peerServerPort = peerServerport;
+        connected = false;
+        peerConnections = new PeerNode(this.peerServerPort);
+    }
+
+    public void join(String query) throws IOException {
+        if (!connected) {
+            String data = null;
+            StringBuilder identity = new StringBuilder();
+            this.writeToPeer(query);
+            data = this.readFromPeer();
+            System.out.println(data);
+            System.out.print(">> ");
+            //Here user is supposed to enter name
+            String inp = input.readLine();
+            identity.append(inp + "," + this.peerServerPort);
+            this.writeToPeer(identity.toString());
+            while (!(data = this.readFromPeer()).matches("Client Successfully connected to server by name.*")) {
+
+                identity.delete(0, identity.length());
+                System.out.println(data);
+                System.out.print(">> ");
+                String inp1 = input.readLine();
+                identity.append(inp1 + "," + peerServerPort);
+                this.writeToPeer(identity.toString());
+
+            }
+            connected = true;
+            System.out.println(data);
+
+        } else {
+            System.out.println("Already Connected!!");
+        }
+
+    }
+
+    public void list(String query) {
+        String data = null;
+        this.writeToPeer(query);
+        data = this.readFromPeer();
+        System.out.println(data);
+
+    }
+
+    public void leave(String query) {
+        String data = null;
+        peerConnections.closeEveryThing();
+        this.writeToPeer(query);
+        data = this.readFromPeer();
+        System.out.println(data);
+        this.closePeerConnection();
+        System.exit(1);
+    }
+
+    public void p2pConnect(String query) {
+        String data = null;
+        this.writeToPeer(query);
+        data = this.readFromPeer();
+        if (data.matches("FOUND.*")) {
+            String host = data.split(",")[0].split(": ")[1];
+            int port = Integer.parseInt(data.split(",")[1]);
+            peerConnections.addConnection(host, port);
+        } else {
+            System.out.println(data);
+        }
+    }
+
+    public void p2pSend(String query) {
+        String hostName = query.split("<")[1].split(">")[0];
+        String message = query.split(":")[1];
+        peerConnections.sendMessage(hostName, message);
+    }
+
+    public void p2pDisconnect(String query) {
+        String hostName = query.split("<")[1].split(">")[0];
+        peerConnections.closeConnection(hostName);
+    }
+
+    public void startLoop() throws IOException {
+        String userInput, data;
+
+        while (true) {
+            System.out.print(">> ");
+            userInput = input.readLine();
+            if (userInput.matches("JOIN")) {
+                join(userInput);
+            } else if (userInput.matches("LIST")) {
+                list(userInput);
+            } else if (userInput.matches("LEAVE")) {
+                leave(userInput);
+            }
+            //Connection format P2P CONNECT name
+            else if (userInput.matches("P2P CONNECT.*")) {
+                p2pConnect(userInput);
+            }
+            //Message format P2P SEND <name> :message
+            else if (userInput.matches("P2P SEND.*")) {
+                p2pSend(userInput);
+            }
+            //Disconnect from host Format P2P DISCONNECT name
+            else if (userInput.matches("P2P DISCONNECT.*")) {
+                p2pDisconnect(userInput);
+            }
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+
+        if (args.length != 3) {
+            System.err.println("Usage: java MainClient <Server Address> <Server Port> <My Port Number> ");
+            System.exit(1);
+        }
+        //Read port number and number of client threads
+        String serverAddress = args[0];
+        int serverport = Integer.parseInt(args[1]);
+        int myport = Integer.parseInt(args[2]);
+
+        MainClient myClient = new MainClient(serverAddress, serverport, myport);
+        myClient.startLoop();
+    }
+}
